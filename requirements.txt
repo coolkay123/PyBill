@@ -3,3 +3,8 @@ imap-tools==1.11.0
 joblib==1.5.1
 soupsieve==2.7
 typing_extensions==4.14.1
+pandas
+scikit-learn
+joblib
+colorama==0.4.6
+dotenv
