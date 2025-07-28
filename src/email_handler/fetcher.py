@@ -27,9 +27,9 @@ def extract_clean_text(msg):
         clean_text = raw_text.strip()
     return re.sub(r'\s+', ' ', clean_text)  # collapse whitespace
 
-def fetch_bill_emails(model, limit, username, password):
+def fetch_bill_emails(server, model, limit, username, password):
   bill_count = 0
-  with MailBox("imap.gmail.com").login(username, password, "Inbox") as mailbox:
+  with MailBox(server).login(username, password, "Inbox") as mailbox:
     for msg in mailbox.fetch(reverse=True, limit = limit):
       text = msg.text or msg.html or ""
       prediction = model.predict([text])
@@ -44,8 +44,8 @@ def is_receipt(text):
    text = text.lower()
    return any(keyword in text for keyword in RECEIPT_KEYWORDS)
 
-def fetch_and_save_emails(username, password,filename, limit=200):
-    with MailBox("imap.gmail.com").login(username, password, "Inbox") as mailbox:
+def fetch_and_save_emails(server, username, password,filename, limit=200):
+    with MailBox(server).login(username, password, "Inbox") as mailbox:
         with open(filename, "w", newline='', encoding='utf-8') as f:
             writer = csv.writer(f, quoting=csv.QUOTE_ALL)
             writer.writerow(["text", "label"])
@@ -72,9 +72,9 @@ def domain_converter(email):
   new = inter     
   return new
 
-def categorize_company(model, year, isAll, username, password):
+def categorize_company(server, model, year, isAll, username, password):
   company_dict = {}
-  with MailBox("imap.gmail.com").login(username, password, "Inbox") as mailbox:
+  with MailBox(server).login(username, password, "Inbox") as mailbox:
     if isAll:
         messages = mailbox.fetch()
     else:
@@ -93,13 +93,13 @@ def categorize_company(model, year, isAll, username, password):
               company_dict[email_from] = [msg.subject]
   return company_dict
 
-def stats_summary(model, year, isAll, username, password):
+def stats_summary(server, model, year, isAll, username, password):
   total = 0
   ebill_count = 0
   top_sender = {}
   company_dict_descend = {}
   i = 0
-  with MailBox("imap.gmail.com").login(username, password, "Inbox") as mailbox:
+  with MailBox(server).login(username, password, "Inbox") as mailbox:
     if isAll:
         messages = mailbox.fetch()
     else:
@@ -109,7 +109,7 @@ def stats_summary(model, year, isAll, username, password):
     for msg in messages:
         if isAll or (msg.date.year == year):
           total += 1
-  company_dict = categorize_company(model, year, isAll, username, password)
+  company_dict = categorize_company(server, model, year, isAll, username, password)
   for company in company_dict:
      company_dict_descend[company] = len(company_dict[company])
      ebill_count += len(company_dict[company])

@@ -18,6 +18,16 @@ FILENAME = os.path.normpath(
 )
 model = joblib.load(FILENAME)
 
+# Map email domains to IMAP servers
+imap_servers = {
+    "gmail.com": "imap.gmail.com",
+    "yahoo.com": "imap.mail.yahoo.com",
+    "outlook.com": "imap-mail.outlook.com",
+    "hotmail.com": "imap-mail.outlook.com",
+    "icloud.com": "imap.mail.me.com",
+}
+
+
 def int_input(message):
   while True:
       try:
@@ -53,11 +63,18 @@ if __name__ == "__main__":
     if not password:
       password = getpass("Enter your app password: ")
 
+    # Extract domain and lookup IMAP server
+    domain = username.split('@')[-1].lower()
+    imap_server = imap_servers.get(domain)
+
+    if not imap_server:
+        imap_server = input(f"IMAP server for {domain} not found. Please enter it manually: ")
+
+    # Attempt connection
     try:
-        with MailBox("imap.gmail.com").login(username, password, "INBOX") as mailbox:
+        with MailBox(imap_server).login(username, password, "INBOX") as mailbox:
             print("✅ Connected to mailbox!")
             break
-
     except MailboxLoginError:
         print("❌ Login failed. Please check your email or app password and try again.")
 
@@ -72,21 +89,21 @@ if __name__ == "__main__":
     if (i == 1):
       limit = int_input("Enter the number of email(s) you want to display: ")
       print("Loading...")
-      fetch_bill_emails(model, limit, username, password)
+      fetch_bill_emails(imap_server, model, limit, username, password)
       print('\n')
 
     
     elif (i == 2):
       year, isAll = year_int("Enter the year (Type 'All' for all the emails): ")
       print("Loading...")
-      company_dict = categorize_company(model, year, isAll, username, password)
+      company_dict = categorize_company(imap_server, model, year, isAll, username, password)
       for company in company_dict:
         print(company + " -> " + str(len(company_dict[company])) + " emails")
 
     elif (i == 3):
       year, isAll = year_int("Enter the year you want to see the summary of (Type 'All' for all the emails): ")
       print("Loading...")
-      total, ebill_count, top_sender = stats_summary(model, year, isAll, username, password)
+      total, ebill_count, top_sender = stats_summary(imap_server, model, year, isAll, username, password)
       print("Total email(s) scanned:", total)
       print("Total number of email(s) which were an eBill:", ebill_count)
       print("Top sender domains:")
