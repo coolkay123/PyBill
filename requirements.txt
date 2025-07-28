@@ -7,4 +7,4 @@ pandas
 scikit-learn
 joblib
 colorama==0.4.6
-dotenv
+python-dotenv
