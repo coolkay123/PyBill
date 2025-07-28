@@ -23,11 +23,12 @@ Install dependencies using:
 
 ```bash
 pip install -r requirements.txt
+```
 
 ## 🔐 Using a `.env` File (Optional)
 
 You can avoid typing your credentials every time by creating a `.env` file in the root of the project:
 
-```dotenv
+```
 EMAIL_USERNAME=youremail@gmail.com
 EMAIL_PASSWORD=your-app-password
